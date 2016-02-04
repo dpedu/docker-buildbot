@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Cleanly kill supervisor when container is stopped
+trap 'kill $(jobs -p)' EXIT
+
+if [ "$ROLE" == "" ] ; then exit 1 ; fi
+
+if [ "$ROLE" == "master" ] || [ "$ROLE" == "both" ] ; then
+  echo "Creating master...."
+  cp /etc/supervisor/disabled/supervisor-buildbot-master.conf /etc/supervisor/conf.d/
+  buildbot create-master /opt/buildbot/
+fi
+
+if [ "$ROLE" == "slave" ] || [ "$ROLE" == "both" ] ; then
+  if [ "$ROLE" == "both" ] ; then
+    MADDR=localhost
+  fi
+  if [ "$MADDR" == "" ] ; then exit 1 ; fi
+  if [ "$MPORT" == "" ] ; then exit 1 ; fi
+  if [ "$PASS" == "" ] ; then exit 1 ; fi
+
+  echo "Creating slave..."
+  cp /etc/supervisor/disabled/supervisor-buildbot-slave.conf /etc/supervisor/conf.d/
+  buildslave create-slave /opt/buildbot-slave/ $MADDR:$MPORT `hostname` $PASS
+fi
+
+# start services
+supervisord
