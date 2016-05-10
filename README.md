@@ -1,12 +1,17 @@
-Run master:
+docker-buildbot
+===============
 
-docker run -d -P -e ROLE=master -v /Users/dave/Documents/Code/docker-buildbot/combined/test/master.cfg:/opt/buildbot/master.cfg -v /Users/dave/Documents/Code/docker-buildbot/combined/test/state.sqlite:/opt/buildbot/state.sqlite --name="bb-master" buildbot
+Buildbot master/slave image
 
-Run slave:
+*Usage:*
 
-docker run -d -P -e ROLE=slave -e MADDR=172.17.0.2 -e MPORT=9989 --hostname=slave1 -e PASS=slaveone --name=bb-slave1 buildbot
+* Build: `docker build -t buildbot .`
+* Run a master: `docker run -d -P -e ROLE=master --name="bb-master" buildbot`
+* Run a slave: `docker run -d -P -e ROLE=slave --link bb-master:buildmaster -e MADDR=buildmaster -e MPORT=9989 --hostname=slave1 -e PASS=slaveone --name="bb-slave1" buildbot`
 
-Run combined:
+`ROLE=both` is available as well: `docker run -d -P -e ROLE=both -e MPORT=9989 --hostname=slave1 -e PASS=slaveone --name=bb-slave1 buildbot`
 
-docker run -d -P -e ROLE=both -e MPORT=9989 --hostname=slave1 -e PASS=slaveone --name=bb-slave1 buildbot
+*Extras:*
 
+* Master data persistence: `-v /host/dir:/opt/buildbot`
+* Check the branches for a buildbot 0.9x version. At time of writing 0.9x is horribly broken; ymmv.
